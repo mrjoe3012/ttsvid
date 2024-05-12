@@ -6,7 +6,7 @@ This application uses XTTS to convert input strings into realistic, presenter-st
 
 Ensure you have Python version 3 installed before attempting the steps below.
 
-The easiest way to install the application is by using the pre-packaged wheel file. Download the latest release [here]().
+The easiest way to install the application is by using the pre-packaged wheel file. Download the latest release [here](https://github.com/mrjoe3012/ttsvid/releases/download/v1.0/ttsvid-1.0-py3-none-any.whl).
 
 Once the wheel file has been downloaded, open a terminal in the directory it has been downloaded to and run the following command:
 
