@@ -1,0 +1,45 @@
+#!/bin/python
+import argparse
+from collections import namedtuple
+import torch
+from TTS.api import TTS
+import numpy as np
+import scipy.io.wavfile as wavf
+from ttsvid.audio import quotes_to_audio
+
+Arguments = namedtuple("Arguments", "input output")
+
+def gather_args() -> Arguments:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input", help="The quotes to be read by the presenter.", nargs="+", default=[])
+    parser.add_argument("--output", help="The file to write the audio to.", default="output.wav")
+    args = parser.parse_args()
+    return Arguments(
+        args.input,
+        args.output
+    )
+
+def generate_quotes(args: Arguments) -> None:
+    device = "cuda" if torch.cuda.is_available() else "cpu"    
+    tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
+    pause_seconds = 1.0
+    audio_segments = []
+    sample_rate = 24_000
+    pause_samples = int(sample_rate * pause_seconds)
+    total_samples = 0
+    for quote in args.input:
+        wav = tts.tts(text=quote, speaker_wav="presenter.mp3", language="en")
+        wav = np.array(wav)
+        total_samples += wav.shape[0]
+        audio_segments.append(wav)
+    combined_wav = np.zeros(total_samples + (len(audio_segments) - 1) * pause_samples)
+    idx = 0
+    for segment in audio_segments:
+        end_of_segment = idx + segment.shape[0]
+        combined_wav[idx:end_of_segment] = segment
+        idx = end_of_segment + pause_samples
+    wavf.write(args.output, sample_rate, combined_wav)
+
+if __name__ == "__main__":
+    args = gather_args()
+    generate_quotes(args)
